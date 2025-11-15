@@ -1,0 +1,1 @@
+.\dist\gamepad_measure\gamepad_measure.exe
