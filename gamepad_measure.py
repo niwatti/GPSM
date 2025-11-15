@@ -305,33 +305,42 @@ def calc_response_curve(movement_stats, direction, min, max, distance, joystick_
 
         #print(f'mm_from_zero: {mm_from_zero}, direction: {direction}, reverse: {reverse}')
 
+        degree = 0
         if (mm_from_zero < 0):
             if reverse: #left to center \ -> |
-                return calc_left_to_center_degree()
+                degree = calc_left_to_center_degree()
             else:       #center to right | -> /
-                return calc_right_to_center_degree()
+                degree = calc_right_to_center_degree()
         else:
             if reverse: #right to center | <- /
-                return - calc_right_to_center_degree()
+                degree = calc_right_to_center_degree()
             else:       #center to left \ <- |
-                return - calc_left_to_center_degree()
+                degree = calc_left_to_center_degree()
+        
+        if direction > 0:
+            degree = - degree
+        
+        return degree
 
 
     # Calculating Distance of Stick Top-Center from Neutral Center Axis
     def calc_distance_from_neutral_center_axis(mm_from_zero, degree):
+        distance_from_neutral_center_axis = 0
         if mm_from_zero <= 0:
             if reverse: #left to center \ -> |
-                compensated_dist_from_center = ((-mm_from_zero) + STICK_RADIUS_MM * math.cos(math.radians(degree)) - STICK_RADIUS_MM)
+                distance_from_neutral_center_axis = ((-mm_from_zero) + STICK_RADIUS_MM * math.cos(math.radians(degree)) - STICK_RADIUS_MM)
             else:       #center to right | -> /
-                compensated_dist_from_center = (-mm_from_zero) - STICK_RADIUS_MM * math.cos(math.radians(degree)) + STICK_RADIUS_MM
+                distance_from_neutral_center_axis = (-mm_from_zero) - STICK_RADIUS_MM * math.cos(math.radians(degree)) + STICK_RADIUS_MM
         else:
             if reverse: #right to center | <- /
-                compensated_dist_from_center = - (mm_from_zero - STICK_RADIUS_MM * math.cos(math.radians(degree)) + STICK_RADIUS_MM)
+                distance_from_neutral_center_axis = - (mm_from_zero - STICK_RADIUS_MM * math.cos(math.radians(degree)) + STICK_RADIUS_MM)
             else:       #center to left \ <- |
-                compensated_dist_from_center = - (mm_from_zero + STICK_RADIUS_MM * math.cos(math.radians(degree)) - STICK_RADIUS_MM)
+                distance_from_neutral_center_axis = - (mm_from_zero + STICK_RADIUS_MM * math.cos(math.radians(degree)) - STICK_RADIUS_MM)
 
         if direction > 0:
-            compensated_dist_from_center = - compensated_dist_from_center
+            distance_from_neutral_center_axis = - distance_from_neutral_center_axis
+        
+        return distance_from_neutral_center_axis
 
     distance_to_center = determine_center_from_zero_idx(movement_stats)
     print(f'distance to center from 0mm is {distance_to_center}mm')
@@ -341,9 +350,8 @@ def calc_response_curve(movement_stats, direction, min, max, distance, joystick_
         step_distance = step * STEP_DISTANCE_MM
 
         mm_from_zero = step_distance - distance_to_center
+        
         degree = calc_degree(mm_from_zero)
-        if direction > 0:
-            degree = - degree
 
         compensated_dist_from_center = calc_distance_from_neutral_center_axis(mm_from_zero, degree)
 
